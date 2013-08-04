@@ -1,0 +1,57 @@
+b {
+	font-weight: normal;
+}
+
+.Name {
+	color: red;
+}
+
+.Sucka {
+	color: yellow;
+}
+
+.border {
+	border: 1px solid black;
+}
+
+.background {
+	background: green;
+}
+
+.color {
+	color: orange;
+}
+
+/* formatting */
+
+.description,
+.code {
+	margin: 0 1em .5em 0;
+	float: left;
+}
+
+.code {
+	color: #a6e22e;
+	font-family: monospace;
+}
+
+.description {
+	clear: left;
+	color: #e6db74;
+	margin-bottom: .5em;
+}
+
+.example {
+	float: left;
+	clear: right;
+	transition: all 1s ease-in-out;
+	-webkit-transition: all 1s ease-in-out;
+}
+
+.list {
+	margin-left: 1.5em;
+}
+
+.header {
+	clear: both;
+}
