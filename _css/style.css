@@ -25,14 +25,17 @@ SECTIONS:
  }
 
 body {
-	background: #49483e;
+	background: #e6e6e6;
 	color: #cfcfc2;
 	font-family: sans-serif;
 	font-size: 16px;
+	margin: 0;
 }
 
 a {
 	color: #66d9ef;
+	transition: color .1s ease-in-out;
+	-webkit-transition: color .1s ease-in-out;
 }
 
 a:hover,
@@ -45,13 +48,19 @@ a:visited {
 }
 
 h1, h2, h3, h4, h5, h6 {
-	font-family: serif;
+	font-family: Georgia, serif;
 	color: #ffffff;
 }
 
 #wrapper {
+	background: #272822;
 	width: 60em;
 	margin: auto;
+	padding: 1em 1em;
+}
+
+.main-headline {
+	margin: 0 0 1em 0;
 }
 
 /* ----------------------------------------------------------------
@@ -59,9 +68,7 @@ h1, h2, h3, h4, h5, h6 {
 ------------------------------------------------------------------- */
 
 .section {
-	background: #272822;
-	border: 1px solid #222218;
-	border-radius: 10px;
+	border-left: 1em solid #464741;
 	display: table;
 	padding: 0 1em;
 	margin-bottom: 1em;

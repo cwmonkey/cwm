@@ -6,21 +6,27 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<title>tpl Example - cwm repo</title>
+	<title>jquery.tpl Example - cwm repo</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width">
+	<link rel="stylesheet" href="../../css-reset/reset.css">
+	<link rel="stylesheet" href="../../css-normalize/cms-normalize.css">
 	<link rel="stylesheet" href="../../_css/style.css">
 	<link rel="stylesheet" href="tpl.example.css">
 	<!--[if lt IE 9]>
-		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+		<script sr:"//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
 </head>
-<body>
+<body id="tplex">
 	<div id="wrapper">
 		<main id="main">
-			<h1>tpl Example - <a href="https://github.com/cwmonkey/cwm">cwm repo</a></h1>
+			<h1 class="main-headline">jquery.tpl - <a href="https://github.com/cwmonkey/cwm">cwm repo</a></h1>
 
-			<div id="tplarea">
+			<div id="tplarea" class="cms">
+				
+			</div>
+
+			<div id="hbtplarea" class="cms">
 				
 			</div>
 		</main>
@@ -30,29 +36,17 @@
 		<section class="section examples">
 			<h2 class="header">Examples</h2>
 			<dl class="list">
-				<dd class="description">Unbound js print:</dd>
-				<dd class="code">&#123;%=this.name %&#125;</dd>
-				<dt class="example">{%=this.name %}</dt>
-
-				<dd class="description">Unbound print:</dd>
+				<dd class="description">Bound print:</dd>
 				<dd class="code">&#123;name}</dd>
 				<dt class="example">{name}</dt>
-
-				<dd class="description">Bound print:</dd>
-				<dd class="code">&#123;#name}</dd>
-				<dt class="example">{#name}</dt>
 
 				<dd class="description">Bound attribute print:</dd>
 				<dd class="code">&#123;title="&#123;name}"}</dd>
 				<dt class="example" {title="{name}"}>[mouse over]</dt>
 
 				<dd class="description">Bound class print:</dd>
-				<dd class="code">class="&#123;c=name}"</dd>
-				<dt class="example {c=name}">[color will change]</dt>
-
-				<dd class="description">Bound class print (how the above will render in the html):</dd>
-				<dd class="code">class="&#123;!c=name}{/c}"</dd>
-				<dt class="example {!c=name}{/c}">[color will change]</dt>
+				<dd class="code">class="&#123;:name}"</dd>
+				<dt class="example {:name}">[color will change]</dt>
 
 				<dd class="description"></dd>
 				<dd class="code"></dd>
@@ -66,16 +60,16 @@
 				<a href="#">Set name = Sucka</a>
 			</p>
 			<p>
-				No value (<b>{</b>test1}): {test1}
+				No value (&#123;=test1}): {=test1}
 			</p>
 			<p class="set_test1">
-				No value (<b>{</b>#test1}, <a href="#">Set value</a>): {#test1}
+				No value (&#123;test1}, <a href="#">Set value</a>): {test1}
 			</p>
 			<p class="set_test1-2">
-				No value (<b>{</b>#test1}, <a href="#">Set new value</a>): {#test1}
+				No value (&#123;test1}, <a href="#">Set new value</a>): {test1}
 			</p>
-			<p class="{c=test2} {c=test3} {c=test4}">
-				Many classes (<b>{</b>c=test2} <b>{</b>c=test3} <b>{</b>c=test4})
+			<p class="{:test2} {:test3} {:test4}">
+				Many classes (&#123;:test2} &#123;:test3} &#123;:test4})
 			</p>
 			<p class="set_test2">
 				<a href="#">Set test 2 (border)</a>
@@ -90,8 +84,22 @@
 				<a href="#">Set test 2, 3, 4 to ''</a>
 			</p>
 		</section>
+
+		<section class="section handlebars">
+			<h2 class="header">Handlebars</h2>
+			<div class="entry">
+				<h3>{{title}}</h3>
+				<div class="body">
+					{{body}}
+				</div>
+				<div class="cms {:name}" {title="{name}"}>
+					{name}
+				</div>
+			</div>
+		</section>
 	</script>
 
+	<script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/1.0.0/handlebars.min.js"></script>
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 	<script src="../jquery.tpl.js"></script>
 	<script src="tpl.example.js"></script>

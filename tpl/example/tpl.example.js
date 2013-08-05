@@ -1,15 +1,17 @@
 (function($) {
 $(function() {
+	var source   = $('#test-tpl').html();
+	var template = Handlebars.compile(source);
 	var vals = {
-		name: 'Name'
+		name: 'Name',
+		title: 'My New Post',
+		body: 'This is my first post!'
 	};
+	var html    = template(vals);
 
-	$.tpl.load({
-		name: 'test',
-		html: $('#test-tpl').html()
-	});
+	var tpl = $.tpl.compile(html);
 
-	var test_tpl = $.tpl.make('test', vals);
+	var test_tpl = tpl(vals);
 
 	$('#tplarea').append(test_tpl.$node);
 

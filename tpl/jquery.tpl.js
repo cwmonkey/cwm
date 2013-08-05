@@ -1,35 +1,33 @@
 (function($) {
 
 // Define regexes for variable replacement
-var search_class = /{c=([a-zA-Z][a-zA-Z0-9\-_]*)}/g;
-var search_class_alt = /{!c=([a-zA-Z][a-zA-Z0-9\-_]*)}( ([^{]*) )?{\/c}/g;
+var search_class = /{:([a-zA-Z][a-zA-Z0-9\-_]*)}/g;
+var search_class_alt = /{!:([a-zA-Z][a-zA-Z0-9\-_]*)}( ([^{]*) )?{\/:}/g;
 var search_attr = /{([a-zA-Z][a-zA-Z0-9\-_]*)="[^"]*{([a-zA-Z][a-zA-Z0-9\-_]*)}[^"]*"}/;
-var search_bind = /{#([a-zA-Z][a-zA-Z0-9\-_]*)}/;
-var search = /{([a-zA-Z][a-zA-Z0-9\-_]*)}/;
+var search_bind = /{([a-zA-Z][a-zA-Z0-9\-_]*)}/;
+var search_unbound = /{=([a-zA-Z][a-zA-Z0-9\-_]*)}/;
 
 // Regex for code parsing
 var split_reg = /({%=)|({%)|(%})/;
 
 // Template class
 var Tpl = function(html, values) {
-	html = this.parseJs(html, values);
-	html = this.parseVars(html, values);
+	this.html = html;
+	this.$node = null;
 
-	this.$node = $('<div class="tpl">' + html + '</div>');
+	this.make = (function(me) {
+		return function(values) {
+			var html = me.parseVars(me.html, values);
+			me.$node = $('<div class="tpl">' + html + '</div>');
+			return me;
+		};
+	})(this);
 };
 
 // Parse the {} style vars
 Tpl.prototype.parseVars = function(html, values) {
 	var match;
 	var me = this;
-
-	while ( (match = search_bind.exec(html)) ) {
-		var $node = $('<span/>')
-			.addClass('Template_' + match[1]);
-		if ( typeof values[match[1]] != 'undefined' ) $node.html(values[match[1]]);
-
-		html = html.replace(match[0], $('<div/>').append($node.eq(0).clone()).html());
-	}
 
 	while ( (match = search_attr.exec(html)) ) {
 		var replace = match[1] + '="';
@@ -41,28 +39,36 @@ Tpl.prototype.parseVars = function(html, values) {
 	}
 
 	while ( (match = search_class.exec(html)) ) {
-		var replace = '{!c=' + match[1] + '} ';
+		var replace = '{!:' + match[1] + '} ';
 
 		if ( typeof values[match[1]] != 'undefined' ) replace += values[match[1]];
-		replace += ' {/c}';
+		replace += ' {/:}';
 
 		html = html.replace(match[0], replace);
 	}
 
 	while ( (match = search_class_alt.exec(html)) ) {
-		var replace = '{!c=' + match[1] + '} ';
+		var replace = '{!:' + match[1] + '} ';
 
 		if ( typeof values[match[1]] != 'undefined' ) replace += values[match[1]];
-		replace += ' {/c}';
+		replace += ' {/:}';
 
 		html = html.replace(match[0], replace);
 	}
 
-	while ( (match = search.exec(html)) ) {
+	while ( (match = search_unbound.exec(html)) ) {
 		var value = '';
 		if ( typeof values[match[1]] != 'undefined' ) value = values[match[1]];
 
 		html = html.replace(match[0], value);
+	}
+
+	while ( (match = search_bind.exec(html)) ) {
+		var $node = $('<span/>')
+			.addClass('Template_' + match[1]);
+		if ( typeof values[match[1]] != 'undefined' ) $node.html(values[match[1]]);
+
+		html = html.replace(match[0], $('<div/>').append($node.eq(0).clone()).html());
 	}
 
 	return html;
@@ -90,16 +96,16 @@ Tpl.prototype.set = function(name, val) {
 	}
 
 	// Class vars
-	var $els = this.$node.find('.\\{\\!c\\=' + name + '\\}, .\\{\\!c\\=' + name + '\\}\\{\\/c\\}');
+	var $els = this.$node.find('.\\{\\!\\:' + name + '\\}, .\\{\\!\\:' + name + '\\}\\{\\/\\:\\}');
 
 	$els.each(function() {
 		var className = this.className;
 		while ( (match = search_class_alt.exec(className)) ) {
 			if ( match[1] != name ) continue;
-			var replace = '{!c=' + match[1] + '} ';
+			var replace = '{!:' + match[1] + '} ';
 
 			if ( typeof val != 'undefined' ) replace += val;
-			replace += ' {/c}';
+			replace += ' {/:}';
 
 			var newClassName = className.replace(match[0], replace);
 			if ( newClassName != className ) this.className = newClassName;
@@ -107,61 +113,13 @@ Tpl.prototype.set = function(name, val) {
 	});
 };
 
-// Parse javascript in template
-Tpl.prototype.parseJs = function(html, values) {
-	var parts = html.split(split_reg);
-	var code = '';
-
-	for ( var i = 0; i < parts.length; i++ ) {
-		if ( typeof parts[i] == 'undefined' ) {         
-			parts.splice(i, 1);
-			i--;
-		}
-	}
-
-	for ( var i=0, part; i < parts.length; i++ ) {
-		part = parts[i];
-		if ( part == '{%' ) {
-			i++;
-			code += parts[i];
-		} else if ( part == '{%=' ) {
-			i++;
-			code += '\ntt += ' + parts[i] + ';\n';
-		} else if ( part == '%}' ) {
-			
-		} else {
-			code += '\ntt += parts[' + i + '];\n';
-		}
-	}
-
-	var do_tpl;
-
-	code = 'do_tpl = function() {\nvar tt="";\n' + code + '\nreturn tt;\n};';
-
-	eval(code);
-
-	html = do_tpl.call(values);
-
-	return html;
-};
-
 // Store html for reuse
 var tpls = {};
 
 $.tpl = {
-	load: function(params) {
-		// Load multiple templates
-		if ( toString.call(params) === '[object Array]' ) {
-			for ( var i in params ) {
-				$.tpl.load(params[i]);
-			}
-			return;
-		}
-
-		tpls[params.name] = params.html;
-	},
-	make: function(name, obj) {
-		return new Tpl(tpls[name], obj);
+	compile: function(html) {
+		var tpl = new Tpl(html)
+		return tpl.make;
 	}
 };
 

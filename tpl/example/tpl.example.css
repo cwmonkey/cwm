@@ -24,34 +24,35 @@ b {
 
 /* formatting */
 
-.description,
-.code {
+#tplex .description,
+#tplex .code {
 	margin: 0 1em .5em 0;
 	float: left;
 }
 
-.code {
+#tplex .code {
 	color: #a6e22e;
 	font-family: monospace;
 }
 
-.description {
+#tplex .description {
 	clear: left;
 	color: #e6db74;
 	margin-bottom: .5em;
 }
 
-.example {
+#tplex .example {
 	float: left;
 	clear: right;
 	transition: all 1s ease-in-out;
 	-webkit-transition: all 1s ease-in-out;
+	margin-bottom: .5em;
 }
 
-.list {
+#tplex .list {
 	margin-left: 1.5em;
 }
 
-.header {
+#tplex .header {
 	clear: both;
 }
