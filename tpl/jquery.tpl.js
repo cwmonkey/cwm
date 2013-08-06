@@ -19,6 +19,7 @@ var Tpl = function(html, values) {
 		return function(values) {
 			var html = me.parseVars(me.html, values);
 			me.$node = $('<div class="tpl">' + html + '</div>');
+			me.$node.data({tpl: me});
 			return me;
 		};
 	})(this);
@@ -32,7 +33,7 @@ Tpl.prototype.parseVars = function(html, values) {
 	while ( (match = search_attr.exec(html)) ) {
 		var replace = match[1] + '="';
 
-		if ( typeof values[match[2]] != 'undefined' ) replace += values[match[2]];
+		if ( values && typeof values[match[2]] != 'undefined' ) replace += values[match[2]];
 		replace += '" data-tpl-' + match[2] + '="' + match[1] + '" ';
 
 		html = html.replace(match[0], replace);
@@ -41,7 +42,7 @@ Tpl.prototype.parseVars = function(html, values) {
 	while ( (match = search_class.exec(html)) ) {
 		var replace = '{!:' + match[1] + '} ';
 
-		if ( typeof values[match[1]] != 'undefined' ) replace += values[match[1]];
+		if ( values && typeof values[match[1]] != 'undefined' ) replace += values[match[1]];
 		replace += ' {/:}';
 
 		html = html.replace(match[0], replace);
@@ -50,7 +51,7 @@ Tpl.prototype.parseVars = function(html, values) {
 	while ( (match = search_class_alt.exec(html)) ) {
 		var replace = '{!:' + match[1] + '} ';
 
-		if ( typeof values[match[1]] != 'undefined' ) replace += values[match[1]];
+		if ( values && typeof values[match[1]] != 'undefined' ) replace += values[match[1]];
 		replace += ' {/:}';
 
 		html = html.replace(match[0], replace);
@@ -58,7 +59,7 @@ Tpl.prototype.parseVars = function(html, values) {
 
 	while ( (match = search_unbound.exec(html)) ) {
 		var value = '';
-		if ( typeof values[match[1]] != 'undefined' ) value = values[match[1]];
+		if ( values && typeof values[match[1]] != 'undefined' ) value = values[match[1]];
 
 		html = html.replace(match[0], value);
 	}
@@ -66,7 +67,7 @@ Tpl.prototype.parseVars = function(html, values) {
 	while ( (match = search_bind.exec(html)) ) {
 		var $node = $('<span/>')
 			.addClass('Template_' + match[1]);
-		if ( typeof values[match[1]] != 'undefined' ) $node.html(values[match[1]]);
+		if ( values && typeof values[match[1]] != 'undefined' ) $node.html(values[match[1]]);
 
 		html = html.replace(match[0], $('<div/>').append($node.eq(0).clone()).html());
 	}
