@@ -18,7 +18,7 @@ var Tpl = function(html, values) {
 	this.make = (function(me) {
 		return function(values) {
 			var html = me.parseVars(me.html, values);
-			me.$node = $('<div class="tpl">' + html + '</div>');
+			me.$node = $('<span class="tpl">' + html + '</span>');
 			me.$node.data({tpl: me});
 			return me;
 		};
