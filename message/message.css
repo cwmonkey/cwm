@@ -1,0 +1,27 @@
+/*html {
+    height: 100%;
+    overflow-y: scroll;
+}
+
+#messages {
+}*/
+
+.message_message {
+    padding-bottom: 1em;
+    position: absolute;
+    max-width: 200px;
+    transition: margin-top 1s ease-in-out, opacity 1s ease-in-out, top 1s ease-in-out;
+    opacity: 0;
+    top: 100%;
+    z-index: 1010;
+    left: 50%;
+}
+
+.message_message.message_active {
+    opacity: 1;
+    top: 30%;
+}
+
+.message_message.message_inactive {
+    top: 0;
+}
