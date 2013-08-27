@@ -11,9 +11,10 @@ var search_unbound = /{=([a-zA-Z][a-zA-Z0-9\-_]*)}/;
 var split_reg = /({%=)|({%)|(%})/;
 
 // Template class
-var Tpl = function(html, values) {
+var Tpl = function(html) {
 	this.html = html;
 	this.$node = null;
+	this.values = {};
 
 	this.make = (function(me) {
 		return function(values) {
@@ -30,6 +31,7 @@ var Tpl = function(html, values) {
 Tpl.prototype.parseVars = function(html, values) {
 	var match;
 	var me = this;
+	this.values = values;
 
 	while ( (match = search_attr.exec(html)) ) {
 		var replace = match[1] + '="';
@@ -87,6 +89,8 @@ Tpl.prototype.set = function(name, val) {
 		return;
 	}
 
+	this.values[name] = val;
+
 	// Bind vars
 	var $el = this.$node.find('.Template_' + name);
 	$el.html(val);
@@ -114,6 +118,10 @@ Tpl.prototype.set = function(name, val) {
 		}
 	});
 };
+
+Tpl.prototype.get = function(name) {
+	return this.values[name];
+}
 
 // Store html for reuse
 var tpls = {};
