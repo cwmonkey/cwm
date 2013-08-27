@@ -8,13 +8,14 @@
 
 .message_message {
     padding-bottom: 1em;
-    position: absolute;
+    position: fixed;
     max-width: 200px;
     transition: margin-top 1s ease-in-out, opacity 1s ease-in-out, top 1s ease-in-out;
     opacity: 0;
     top: 100%;
     z-index: 1010;
     left: 50%;
+    pointer-events: none;
 }
 
 .message_message.message_active {
