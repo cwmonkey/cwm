@@ -7,7 +7,7 @@ var defaults = {
 };
 
 $.message = function(args) {
-	if ( typeof args == 'string' ) {
+	if ( typeof args == 'string' || typeof args == 'number' ) {
 		args = {message: args};
 	}
 
