@@ -45,7 +45,7 @@ Tpl.prototype.parseVars = function(html, values) {
 	while ( (match = search_class.exec(html)) ) {
 		var replace = '{!:' + match[1] + '} ';
 
-		if ( values && typeof values[match[1]] != 'undefined' ) replace += values[match[1]];
+		if ( values && typeof values[match[1]] != 'undefined' ) replace += values[match[1]] + ' ' + match[1] + values[match[1]];
 		replace += ' {/:}';
 
 		html = html.replace(match[0], replace);
@@ -54,7 +54,7 @@ Tpl.prototype.parseVars = function(html, values) {
 	while ( (match = search_class_alt.exec(html)) ) {
 		var replace = '{!:' + match[1] + '} ';
 
-		if ( values && typeof values[match[1]] != 'undefined' ) replace += values[match[1]];
+		if ( values && typeof values[match[1]] != 'undefined' ) replace += values[match[1]] + ' ' + match[1] + values[match[1]];
 		replace += ' {/:}';
 
 		html = html.replace(match[0], replace);
@@ -102,7 +102,12 @@ Tpl.prototype.set = function(name, val) {
 	}
 
 	// Class vars
-	var $els = this.$node.find('.\\{\\!\\:' + name + '\\}, .\\{\\!\\:' + name + '\\}\\{\\/\\:\\}');
+	var selectors = '.\\{\\!\\:' + name + '\\}, .\\{\\!\\:' + name + '\\}\\{\\/\\:\\}';
+	var $els = this.$node.find(selectors);
+
+	if ( this.$node.is(selectors) ) {
+		$els = $els.add(this.$node);
+	}
 
 	$els.each(function() {
 		var className = this.className;
@@ -110,7 +115,7 @@ Tpl.prototype.set = function(name, val) {
 			if ( match[1] != name ) continue;
 			var replace = '{!:' + match[1] + '} ';
 
-			if ( typeof val != 'undefined' ) replace += val;
+			if ( typeof val != 'undefined' ) replace += val + ' ' + match[1] + val;
 			replace += ' {/:}';
 
 			var newClassName = className.replace(match[0], replace);
