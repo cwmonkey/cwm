@@ -118,7 +118,7 @@ Tpl.prototype.parseVars = function(html, values) {
 		var replace = '{!:' + match[1] + '} ';
 
 		if ( values && typeof values[match[1]] != 'undefined' ) {
-			replace += values[match[1]] + ' ' + match[1] + values[match[1]];
+			replace += values[match[1]] + ' ' + match[1] + '-' + values[match[1]];
 		}
 		replace += ' {/:}';
 
