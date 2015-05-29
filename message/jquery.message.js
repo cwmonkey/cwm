@@ -8,7 +8,7 @@ $.message = function(args) {
 		node: window,
 		container: 'body',
 		prefix: 'message_',
-		activeTime: 3000,
+		activeTime: 1000,
 		removeAfter: 1000,
 		addClass: ''
 	};
