@@ -63,7 +63,8 @@ var search_class = /{:([a-zA-Z][a-zA-Z0-9\-_]*)}/g;
 // longhand class: {!:varName} varValue varName-varValue {/:}
 var search_class_alt = /{!:([a-zA-Z][a-zA-Z0-9\-_]*)}( ([^{]*) )?{\/:}/g;
 // attributes: {attr="{varName}"}
-var search_attr = /{([a-zA-Z][a-zA-Z0-9\-_]*)="[^"]*{([a-zA-Z][a-zA-Z0-9\-_]*)}[^"]*"}/;
+var search_attr = /{(([a-zA-Z][a-zA-Z0-9\-_]*)="([^"]*{([a-zA-Z][a-zA-Z0-9\-_]*)}[^"]*)")}/;
+var search_attr_var = /{([a-zA-Z][a-zA-Z0-9\-_]*)}/;
 // bound text: {varName}
 var search_bind = /{([a-zA-Z][a-zA-Z0-9\-_]*)}/;
 // unbound text (one time replace): {=varName}
@@ -81,6 +82,7 @@ var Tpl = function(html) {
 			me.$node = $(html);
 			me.$node.data({tpl: me});
 			me.$node.data({tpl_values: values});
+			me.$node.addClass('tpl-node');
 			return me;
 		};
 	})(this);
@@ -92,28 +94,37 @@ Tpl.prototype.parseVars = function(html, values) {
 	var me = this;
 	this.values = values;
 
+	// Attributes
 	while ( (match = search_attr.exec(html)) ) {
-		var replace = match[1] + '="';
+		var replace = match[2] + '="';
+		var value = '';
 
-		if ( values && typeof values[match[2]] != 'undefined' ) {
-			replace += values[match[2]];
+		if ( values && typeof values[match[4]] != 'undefined' ) {
+			value = values[match[4]];
+			//replace += values[match[3]];
 		}
-		replace += '" data-tpl-' + match[2] + '="' + match[1] + '" ';
+
+		replace += match[3].replace(search_attr_var, value);
+		replace += '" data-tpl-' + match[4] + '="' + match[2];
+		replace += '" data-tpl-' + match[4] + '-tpl="' + encodeURIComponent(match[3]) + '" ';
 
 		html = html.replace(match[0], replace);
-	}
+	}	
 
+	// Class
 	while ( (match = search_class.exec(html)) ) {
 		var replace = '{!:' + match[1] + '} ';
 
 		if ( values && typeof values[match[1]] != 'undefined' ) {
 			replace += values[match[1]] + ' ' + match[1] + '-' + values[match[1]];
 		}
+
 		replace += ' {/:}';
 
 		html = html.replace(match[0], replace);
 	}
 
+	// Other class search
 	while ( (match = search_class_alt.exec(html)) ) {
 		var replace = '{!:' + match[1] + '} ';
 
@@ -125,6 +136,7 @@ Tpl.prototype.parseVars = function(html, values) {
 		html = html.replace(match[0], replace);
 	}
 
+	// Single replace
 	while ( (match = search_unbound.exec(html)) ) {
 		var value = '';
 
@@ -135,6 +147,7 @@ Tpl.prototype.parseVars = function(html, values) {
 		html = html.replace(match[0], value);
 	}
 
+	// Replace and bind
 	while ( (match = search_bind.exec(html)) ) {
 		var $node = $('<span/>')
 			.addClass('Template-' + match[1])
@@ -171,8 +184,9 @@ Tpl.prototype.set = function(name, val) {
 
 	// Attr vars
 	$el = this.$node.find('[data-tpl-' + name + ']');
+
 	if ( $el.length ) {
-		$el.attr($el.data('tpl-' + name), val);
+		$el.attr($el.data('tpl-' + name.toLowerCase()), decodeURIComponent($el.data('tpl-' + name.toLowerCase() + '-tpl')).replace(search_attr_var, val) );
 	}
 
 	// Class vars
@@ -206,6 +220,14 @@ Tpl.prototype.set = function(name, val) {
 
 Tpl.prototype.get = function(name) {
 	return this.values[name];
+}
+
+Tpl.prototype.run = function(name) {
+	for ( var i = 1, args = [], arg, len = arguments.length; i < len; i++ ) {
+		args.push(arguments[i]);
+	}
+
+	return this.values[name].apply(this.values, args);
 }
 
 // Store html for reuse
