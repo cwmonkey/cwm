@@ -150,7 +150,7 @@ Tpl.prototype.parseVars = function(html, values) {
 	// Replace and bind
 	while ( (match = search_bind.exec(html)) ) {
 		var $node = $('<span/>')
-			.addClass('Template-' + match[1])
+			.addClass('Template-bind-value Template-' + match[1])
 			;
 
 		if ( values && typeof values[match[1]] != 'undefined' ) {
