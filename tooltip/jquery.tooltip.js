@@ -74,12 +74,14 @@ var show_tooltip = function() {
   }
 
   if ( $current && $this[0] === $current[0] ) {
-    return;
+    if ( $tooltip_text.html() !== title ) {
+      $tooltip_text.html(title);
+    } else {
+      return;
+    }
   } else if ( $current ) {
     reset_node($current);
   }
-
-console.log('show');
 
   $current = $this;
 
