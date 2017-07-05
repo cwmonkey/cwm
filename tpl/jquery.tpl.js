@@ -6,7 +6,7 @@ Example:
 	var tpl = $.tpl.compile(html);
 
 // Set/bind values
-	var test_tpl = tpl(values)
+	var test_tpl = tpl(values);
 
 // Access the bound template's jQuery node:
 	test_tpl.$node;
@@ -92,16 +92,21 @@ var Tpl = function(html) {
 Tpl.prototype.parseVars = function(html, values) {
 	var match;
 	var me = this;
+	var value;
+	var replace;
 	this.values = values;
 
 	// Attributes
 	while ( (match = search_attr.exec(html)) ) {
-		var replace = match[2] + '="';
-		var value = '';
+		replace = match[2] + '="';
+		value = '';
 
 		if ( values && typeof values[match[4]] != 'undefined' ) {
 			value = values[match[4]];
-			//replace += values[match[3]];
+		}
+
+		if ( typeof value === 'function' ) {
+			value = value();
 		}
 
 		replace += match[3].replace(search_attr_var, value);
@@ -109,14 +114,20 @@ Tpl.prototype.parseVars = function(html, values) {
 		replace += '" data-tpl-' + match[4] + '-tpl="' + encodeURIComponent(match[3]) + '" ';
 
 		html = html.replace(match[0], replace);
-	}	
+	}
 
 	// Class
 	while ( (match = search_class.exec(html)) ) {
-		var replace = '{!:' + match[1] + '} ';
+		replace = '{!:' + match[1] + '} ';
 
 		if ( values && typeof values[match[1]] != 'undefined' ) {
-			replace += values[match[1]] + ' ' + match[1] + '-' + values[match[1]];
+			value = values[match[1]];
+
+			if ( typeof value === 'function' ) {
+				value = value();
+			}
+
+			replace += values[match[1]] + ' ' + match[1] + '-' + value;
 		}
 
 		replace += ' {/:}';
@@ -126,10 +137,16 @@ Tpl.prototype.parseVars = function(html, values) {
 
 	// Other class search
 	while ( (match = search_class_alt.exec(html)) ) {
-		var replace = '{!:' + match[1] + '} ';
+		replace = '{!:' + match[1] + '} ';
 
 		if ( values && typeof values[match[1]] != 'undefined' ) {
-			replace += values[match[1]] + ' ' + match[1] + '-' + values[match[1]];
+			value = values[match[1]];
+
+			if ( typeof value === 'function' ) {
+				value = value();
+			}
+
+			replace += values[match[1]] + ' ' + match[1] + '-' + value;
 		}
 		replace += ' {/:}';
 
@@ -138,10 +155,14 @@ Tpl.prototype.parseVars = function(html, values) {
 
 	// Single replace
 	while ( (match = search_unbound.exec(html)) ) {
-		var value = '';
+		value = '';
 
 		if ( values && typeof values[match[1]] != 'undefined' ) {
 			value = values[match[1]];
+		}
+
+		if ( typeof value === 'function' ) {
+			value = value();
 		}
 
 		html = html.replace(match[0], value);
@@ -154,14 +175,20 @@ Tpl.prototype.parseVars = function(html, values) {
 			;
 
 		if ( values && typeof values[match[1]] != 'undefined' ) {
-			$node.html(values[match[1]]);
+			value = values[match[1]];
+
+			if ( typeof value === 'function' ) {
+				value = value();
+			}
+
+			$node.html(value);
 		}
 
 		html = html.replace(match[0], $('<div/>').append($node.eq(0).clone()).html());
 	}
 
 	return html;
-}
+};
 
 // Update value in rendered template
 Tpl.prototype.set = function(name, val) {
@@ -175,8 +202,6 @@ Tpl.prototype.set = function(name, val) {
 		}
 		return;
 	}
-
-	this.values[name] = val;
 
 	// Bind vars
 	var $el = this.$node.find('.Template-' + name);
@@ -220,7 +245,7 @@ Tpl.prototype.set = function(name, val) {
 
 Tpl.prototype.get = function(name) {
 	return this.values[name];
-}
+};
 
 Tpl.prototype.run = function(name) {
 	for ( var i = 1, args = [], arg, len = arguments.length; i < len; i++ ) {
@@ -228,14 +253,14 @@ Tpl.prototype.run = function(name) {
 	}
 
 	return this.values[name].apply(this.values, args);
-}
+};
 
 // Store html for reuse
 var tpls = {};
 
 $.tpl = {
 	compile: function(html) {
-		var tpl = new Tpl(html)
+		var tpl = new Tpl(html);
 		return tpl.make;
 	}
 };
