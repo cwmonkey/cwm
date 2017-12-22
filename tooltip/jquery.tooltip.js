@@ -2,7 +2,7 @@
 
 Add accessible tooltips.
 
-Example: $('[title]').tooltip();
+Example: $.tooltip('[title]');
 
 TODO:
   Allow for delegates other than body.
@@ -13,6 +13,7 @@ TODO:
 */
 
 ;(function($, undefined) {
+'use strict';
 
 var $body = $('body');
 var $window = $(window);
@@ -25,17 +26,13 @@ var $tooltip = $('<span/>')
   .addClass(class_name)
   .attr('id', id_name)
   .css({
-    position: 'absolute'
+    position: 'absolute',
+    zIndex: 100000 // TODO: Figure this out programmatically?
   })
   ;
 
-var $tooltip_text = $('<span/>')
-  .addClass(class_name + '-text')
-  .appendTo($tooltip)
-  ;
-
-var $tooltip_arrow = $('<span/>')
-  .addClass(class_name + '-arrow')
+var $tooltip_inner = $('<span/>')
+  .addClass(class_name + '-inner')
   .appendTo($tooltip)
   ;
 
@@ -65,18 +62,24 @@ var reset_node = function($el) {
 
 var adjust_timeout;
 var show_tooltip = function() {
+  var orientation_class = '';
   var $this = $(this);
 
   var title = this.title || $this.data('title');
 
   if ( !title ) {
+    hide_tooltip();
     return;
   }
 
   if ( $current && $this[0] === $current[0] ) {
-    if ( $tooltip_text.html() !== title ) {
-      $tooltip_text.html(title);
+    if ( $tooltip_inner.html() !== title ) {
+      $tooltip_inner.html(title);
     } else {
+      observer.disconnect();
+      $this.attr({'title': ''});
+      observer.observe(this, observerConfig);
+
       return;
     }
   } else if ( $current ) {
@@ -87,7 +90,11 @@ var show_tooltip = function() {
 
   clearTimeout(hide_timeout);
 
-  $tooltip_text.html(title);
+  $tooltip_inner.html(title);
+
+  var tooltip_top = $this.data('tooltip-placement');
+
+  observer.disconnect();
 
   $this
     .data('title', title)
@@ -97,48 +104,47 @@ var show_tooltip = function() {
     })
     ;
 
-  observer.disconnect();
   observer.observe(this, observerConfig);
-
-  $tooltip
-    .css({
-      left: '',
-      width: ''
-    })
-    ;
 
   var offset = $this.offset();
   var this_width = $this.outerWidth();
   var this_height = $this.outerHeight();
 
   $tooltip
-    .appendTo($body);
+    .appendTo($body)
+    .css({width: '', left: '', top: ''})
+    .removeClass('top');
+
+  $tooltip_inner.css({left: '', width: ''});
 
   var tooltip_width = $tooltip.outerWidth();
-  $tooltip.css('width', tooltip_width);
+  var tooltip_height = $tooltip.outerHeight();
+  var left_offset = offset.left + this_width / 2 - tooltip_width / 2;
+  var top_offset = tooltip_top ? offset.top - tooltip_height : offset.top + this_height;
 
-  var left = offset.left + this_width / 2 - tooltip_width / 2;
-  if ( left < 0 ) {
-    $tooltip_arrow.css('left', left);
-    left = 0;
-  } else {
-    $tooltip_arrow.css('left', 0);
+  var window_height = $window.height();
+
+  // Protect against tooltips falling off the bottom of the screen
+
+  if ( top_offset + tooltip_height > window_height ) {
+    top_offset = offset.top - tooltip_height;
+    tooltip_top = true;
   }
 
-  $tooltip
-    .css({
-      left: left,
-      top: offset.top + this_height
-    })
-    .addClass(show_class)
-    ;
+  if ( tooltip_top ) orientation_class = 'top';
 
+  var window_width = $window.width();
 
-  if ( left + $tooltip.outerWidth() > $window.width() ) {
-    var off = (left + $tooltip.outerWidth()) - $window.width();
-    $tooltip.css('left', left - off);
-    $tooltip_arrow.css('left', off);
+  // Protect against tooltips falling off the right side of the screen
+  // TODO: bottom and left
+  if ( left_offset + tooltip_width > window_width ) {
+    var reduce = left_offset + tooltip_width - window_width;
+    $tooltip.css({width: tooltip_width - reduce * 2});
+    left_offset = left_offset + reduce;
+    $tooltip_inner.css({left: -2 * reduce, position: 'relative', width: tooltip_width});
   }
+
+  $tooltip.css({ left: left_offset, top: top_offset }).addClass(show_class).addClass(orientation_class);
 };
 
 var hide_timeout;
@@ -156,29 +162,18 @@ var hide_tooltip = function() {
 };
 
 // Plugin
-$.fn.tooltip = function() {
-  var selector = this.selector;
+$.tooltip = function(selector) {
   var init = function() {
-    var ignore_next = false;
     $body
-      /*.delegate(selector, 'mouseenter focus', show_tooltip)
-      .delegate(selector, 'mouseleave blur click mousedown mouseup', hide_tooltip)*/
-      .bind('mousemove', function(e) {
-        if ( ignore_next ) {
-          ignore_next = false;
-          return;
-        }
-
-        var $closest = $(e.target).closest(selector);
-        if ( !$closest.length ) {
-          hide_tooltip();
+      .delegate(selector, 'mouseenter focus', show_tooltip)
+      .delegate(selector, 'mouseleave blur', hide_tooltip)
+      .delegate(selector, 'touchstart', function(e) {
+        if ( $tooltip.hasClass(show_class) ) {
+          hide_tooltip.apply(this, arguments);
+          return false;
         } else {
-          show_tooltip.call($closest[0]);
+          show_tooltip.apply(this, arguments);
         }
-      })
-      .bind('mousedown mouseup', function() {
-        ignore_next = true;
-        hide_tooltip();
       })
       ;
   };
